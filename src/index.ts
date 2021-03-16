@@ -4,8 +4,6 @@ import express from "express";
 import * as bodyParser from "body-parser";
 import * as dotenv from "dotenv";
 import multer from "multer";
-import { Request, Response } from "express";
-import { Product } from "./entity/Product";
 
 import { ProductController } from "./controller/ProductController";
 import { ResponseStructure } from "./helper/response.interface";
@@ -54,6 +52,16 @@ createConnection()
           data: null,
         };
         res.status(error.status || 500).json(response);
+      }
+    );
+
+    //Get All Products
+    app.get(
+      "/product/",
+      async (req: express.Request, res: express.Response) => {
+        const product_controller = new ProductController();
+        const response: ResponseStructure = await product_controller.all();
+        res.status(response.status === Status.ERROR ? 400 : 200).json(response);
       }
     );
 
@@ -126,6 +134,7 @@ createConnection()
       }
     );
 
+    //Update a Product, Add new Varieties
     app.put(
       "/product/:id",
       upload.any(),
@@ -176,6 +185,7 @@ createConnection()
       }
     );
 
+    //Delete a variety
     app.delete(
       "/variety/:id",
       async (req: express.Request, res: express.Response) => {

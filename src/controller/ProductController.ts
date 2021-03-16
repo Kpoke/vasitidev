@@ -16,6 +16,15 @@ export class ProductController {
   private varietyRepository = getRepository(Variety);
   private productRepository = getRepository(Product);
 
+  async all(): Promise<ResponseStructure> {
+    const products = await this.productRepository.find();
+    return {
+      message: "Retrieved Successfully",
+      status: Status.SUCCESS,
+      data: products,
+    };
+  }
+
   async save(
     product_to_save: ProductCreateDto,
     images: any
