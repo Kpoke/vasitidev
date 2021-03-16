@@ -1,0 +1,16 @@
+version: "3.3"
+
+services:
+  node-app:
+    build: .
+    environment:
+      - DB_HOST=db
+    restart: always
+    ports:
+      - 3001:3001
+  db:
+    build: ./mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: `${DB_PASSWORD}`
+      MYSQL_DATABASE: "vasiti_dev"
