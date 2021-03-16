@@ -126,6 +126,56 @@ createConnection()
       }
     );
 
+    app.put(
+      "/product/:id",
+      upload.any(),
+      async (req: express.Request, res: express.Response) => {
+        try {
+          if (check_if_empty(req.body.varieties, req.files))
+            throw new Error("Fields Cannot Be Empty");
+
+          //  Validating Incoming Payload
+          let varieties: [] = req.body.varieties;
+          varieties.forEach(async (variety: any, index, theArray: any[]) => {
+            const newVariety = new VarietyDto();
+            newVariety.color = variety.color;
+            newVariety.price = +variety.price;
+            newVariety.quantity = +variety.quantity;
+            newVariety.size = variety.size;
+            const errors = await validate(newVariety);
+            if (errors.length > 0) {
+              const response: ResponseStructure = {
+                message: "",
+                data: null,
+                status: Status.ERROR,
+              };
+              response.message = `${Object.values(errors[0].constraints)[0]}`;
+              return res.status(400).json(response);
+            }
+            theArray[index] = newVariety;
+          });
+
+          const product_controller = new ProductController();
+          const response: ResponseStructure = await product_controller.update(
+            +req.params.id,
+            req.files,
+            req.body.varieties
+          );
+          res
+            .status(response.status === Status.ERROR ? 400 : 200)
+            .json(response);
+        } catch (e) {
+          const response: ResponseStructure = {
+            message: e.message,
+            data: null,
+            status: Status.ERROR,
+          };
+
+          res.status(400).json(response);
+        }
+      }
+    );
+
     app.delete(
       "/variety/:id",
       async (req: express.Request, res: express.Response) => {

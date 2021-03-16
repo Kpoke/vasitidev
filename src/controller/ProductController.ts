@@ -10,9 +10,11 @@ import { Variety } from "../entity/Variety";
 import { ResponseStructure } from "../helper/response.interface";
 import { Status } from "../helper/status.enum";
 import { Image } from "../entity/Images";
+import { VarietyDto } from "../dto/variety.dto";
 
 export class ProductController {
   private varietyRepository = getRepository(Variety);
+  private productRepository = getRepository(Product);
 
   async save(
     product_to_save: ProductCreateDto,
@@ -85,6 +87,65 @@ export class ProductController {
       await this.varietyRepository.remove(varietyToRemove);
       return {
         message: "Deleted Successfully",
+        status: Status.SUCCESS,
+        data: null,
+      };
+    } catch (e) {
+      const response: ResponseStructure = {
+        message: e.message,
+        status: Status.ERROR,
+        data: null,
+      };
+      return response;
+    }
+  }
+
+  async update(
+    id: number,
+    images: any,
+    varieties: VarietyDto[]
+  ): Promise<ResponseStructure> {
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+    try {
+      let product_to_update = await this.productRepository.findOne(id);
+      if (!product_to_update) throw new Error("Product Entity Not Found");
+
+      for (const [index, variety] of varieties.entries()) {
+        const new_variety = new Variety();
+        Object.assign(new_variety, variety);
+        new_variety.product = product_to_update;
+        await new_variety.save();
+        for (const image of images) {
+          if (+image.fieldname[10] === index) {
+            const parser = new DatauriParser();
+            parser.format(
+              path.extname(image.originalname).toString(),
+              image.buffer
+            );
+            const uniqueFilename = new Date().toISOString();
+            const uploaded_image = await cloudinary.uploader.upload(
+              parser.content,
+              {
+                public_id: `vasiti/${image.fieldname}/${uniqueFilename}`,
+                tags: `vasiti`,
+              }
+            );
+            if (!uploaded_image) {
+              throw new Error("An Error Occured, Try Again");
+            }
+            const new_image = new Image();
+            new_image.image_url = uploaded_image.secure_url;
+            new_image.variety = new_variety;
+            await new_image.save();
+          }
+        }
+      }
+      return {
+        message: "Varieties Added Successfully",
         status: Status.SUCCESS,
         data: null,
       };
