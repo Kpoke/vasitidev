@@ -18,6 +18,7 @@ export class Image extends BaseEntity {
   @ManyToOne((type) => Variety, (variety) => variety.images, {
     nullable: false,
     eager: false,
+    onDelete: "CASCADE",
   })
   variety: Variety;
 

@@ -126,6 +126,17 @@ createConnection()
       }
     );
 
+    app.delete(
+      "/variety/:id",
+      async (req: express.Request, res: express.Response) => {
+        const product_controller = new ProductController();
+        const response: ResponseStructure = await product_controller.remove(
+          +req.params.id
+        );
+        res.status(response.status === Status.ERROR ? 400 : 200).json(response);
+      }
+    );
+
     //Invalid Endpoint
     app.get("/*", (req: express.Request, res: express.Response) => {
       const response: ResponseStructure = {

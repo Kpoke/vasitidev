@@ -35,6 +35,7 @@ export class Variety extends BaseEntity {
   @ManyToOne((type) => Product, (product) => product.product_varieties, {
     nullable: false,
     eager: false,
+    onDelete: "CASCADE",
   })
   product: Product;
 

@@ -12,6 +12,8 @@ import { Status } from "../helper/status.enum";
 import { Image } from "../entity/Images";
 
 export class ProductController {
+  private varietyRepository = getRepository(Variety);
+
   async save(
     product_to_save: ProductCreateDto,
     images: any
@@ -76,8 +78,23 @@ export class ProductController {
     }
   }
 
-  async remove() {
-    //   let userToRemove = await this.userRepository.findOne(request.params.id);
-    //   await this.userRepository.remove(userToRemove);
+  async remove(id: number): Promise<ResponseStructure> {
+    try {
+      let varietyToRemove = await this.varietyRepository.findOne(id);
+      if (!varietyToRemove) throw new Error("Entity Not Found");
+      await this.varietyRepository.remove(varietyToRemove);
+      return {
+        message: "Deleted Successfully",
+        status: Status.SUCCESS,
+        data: null,
+      };
+    } catch (e) {
+      const response: ResponseStructure = {
+        message: e.message,
+        status: Status.ERROR,
+        data: null,
+      };
+      return response;
+    }
   }
 }
