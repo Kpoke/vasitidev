@@ -4,6 +4,7 @@ import express from "express";
 import * as bodyParser from "body-parser";
 import * as dotenv from "dotenv";
 import multer from "multer";
+import cors from "cors";
 
 import { ProductController } from "./controller/ProductController";
 import { ResponseStructure } from "./helper/response.interface";
@@ -37,6 +38,8 @@ createConnection()
     app.use(bodyParser.json());
 
     const port = process.env.PORT || 3000;
+
+    app.use(cors());
 
     //Error Handler
     app.use(
